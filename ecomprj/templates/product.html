@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<br><br><br>
+
+      <div class="container">
+        <div class="card mb-3" style="max-width: 540px;">
+          <div class="row g-0">
+            <div class="col-md-4">
+              <img src="{{product.image.url}}" class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <center>
+                <h5 class="card-title">{{product.name}}</h5>
+
+                <p class="card-text">{{product.description}}</p>
+                  
+                  {% if product.is_sale %}
+
+                  <strike>${{product.price}}</strike>
+                  &nbsp;
+                  ${{product.sale_price}}
+                  <br />
+                  In: {{product.category}}
+
+                  {%else%}
+                    <!-- Product price-->
+                      ${{product.price}}
+                      <br />
+                      In: {{product.category}}
+                      <br /><br />
+
+                  {%endif%}
+
+                  <br /><br />
+
+                  <select class="form-select" aria-label="Default select example" id="select{{ product.id }}">
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+                
+                  
+            
+                  
+                  <br /><br />
+
+                <a href="{% url 'home' %}" class = "btn btn-secondary">Home</a>
+                <button type="button" class="btn btn-secondary" value="{{ product.id }}" id="add-cart">Add to cart</button>  
+              </center>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br><br><br><br><br><br><br><br>
+
+<script>
+  // check if button pressed
+  $(document).on('click', '#add-cart', function (e) {
+    e.preventDefault();
+
+    let product_id = $(this).val();
+    let product_qty = $(`#select${product_id}`).val(); // Dynamically match dropdown ID
+
+    // Log values for debugging
+    console.log("Product ID: ", product_id);
+    console.log("Product Qty: ", product_qty);
+
+    // Ensure values are valid before sending the request
+    if (!product_id || !product_qty) {
+        console.error("Missing product ID or quantity");
+        return alert("Please select a valid product and quantity.");
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'cart_add' %}",
+        data: {
+            product_id: product_id,
+            product_qty: product_qty,
+            csrfmiddlewaretoken: '{{csrf_token}}',
+            action: 'post'
+        },
+        success: function (json) {
+            console.log("Cart updated successfully");
+            document.getElementById("cart_quantity").textContent = json.qty;
+            location.reload();
+        },
+        error: function (xhr, errmsg, err) {
+            console.error(`Error: ${xhr.status}: ${xhr.responseText}`);
+            alert("An error occurred. Please refresh the page and try again.");
+        }
+    });
+});
+
+
+
+</script>
+
+{% endblock content %}
+
